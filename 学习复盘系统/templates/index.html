@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>像素学伴 · AI 学习复盘秘书</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <div class="crt" aria-hidden="true"></div>
+  <div class="scan-sweep" id="scanSweep" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <h1 class="logo neon-text">像素学伴 · AI学习复盘秘书</h1>
+    <div class="header-actions">
+      <span id="aiStatus" class="badge">AI状态检测中…</span>
+      <button class="pixel-btn" id="refreshBtn" type="button">⟳ 霓虹刷新特效</button>
+    </div>
+  </header>
+
+  <nav class="tabs" id="tabs">
+    <button class="tab-btn active" data-tab="panel-year" type="button">年目标</button>
+    <button class="tab-btn" data-tab="panel-month-goal" type="button">月目标</button>
+    <button class="tab-btn" data-tab="panel-week" type="button">周复盘</button>
+    <button class="tab-btn" data-tab="panel-plan" type="button">下周计划</button>
+    <button class="tab-btn" data-tab="panel-month" type="button">月复盘</button>
+    <button class="tab-btn" data-tab="panel-archive" type="button">档案库</button>
+  </nav>
+
+  <main>
+    <!-- 年目标 -->
+    <section class="panel active" id="panel-year">
+      <h2 class="panel-title">🎯 年目标（年初设立）</h2>
+      <div class="form-grid">
+        <div class="field">
+          <label for="yearInput">年份</label>
+          <input id="yearInput" type="number" min="2020" max="2100">
+        </div>
+        <div class="field span-2">
+          <label for="yearContent">年目标内容</label>
+          <textarea id="yearContent" rows="4" placeholder="例如：完成考研一轮复习、拿到 6 门课 90+、完成毕业设计开题……"></textarea>
+        </div>
+      </div>
+      <button class="pixel-btn" id="yearSubmit" type="button">保存年目标</button>
+      <div id="yearCurrent" class="goal-current"></div>
+    </section>
+
+    <!-- 月目标 -->
+    <section class="panel" id="panel-month-goal">
+      <h2 class="panel-title">📅 月目标（月初设立）</h2>
+      <div class="form-grid">
+        <div class="field">
+          <label for="monthGoalMonth">选择月份</label>
+          <input id="monthGoalMonth" type="month">
+        </div>
+        <div class="field span-2">
+          <label for="monthGoalContent">月目标内容</label>
+          <textarea id="monthGoalContent" rows="4" placeholder="例如：完成《数据结构》第 1~4 章、每周 3 次英语精读、完成课程设计初稿……"></textarea>
+        </div>
+      </div>
+      <button class="pixel-btn" id="monthGoalSubmit" type="button">保存月目标</button>
+      <div id="monthGoalList" class="goal-current"></div>
+    </section>
+
+    <!-- 周复盘 -->
+    <section class="panel" id="panel-week">
+      <h2 class="panel-title">📝 周复盘（按指定格式生成并存档）</h2>
+      <div class="form-grid">
+        <div class="field">
+          <label for="weekDate">本周任意日期</label>
+          <input id="weekDate" type="date">
+          <div id="weekLabel" class="field-hint"></div>
+        </div>
+        <div class="field span-2">
+          <label for="f01">01 本周主要事件回顾</label>
+          <textarea id="f01" rows="2" placeholder="本周发生了什么关键事件？"></textarea>
+        </div>
+        <div class="field span-2">
+          <label for="f02">02 工作经验总结</label>
+          <textarea id="f02" rows="2" placeholder="有哪些可复用的经验 / 方法？"></textarea>
+        </div>
+        <div class="field span-2">
+          <label for="f03">03 对标反思</label>
+          <textarea id="f03" rows="2" placeholder="和标杆 / 预期对比，差距在哪？"></textarea>
+        </div>
+        <div class="field span-2">
+          <label for="f04">04 价值观梳理</label>
+          <textarea id="f04" rows="2" placeholder="本周的选择是否符合自己的价值观？"></textarea>
+        </div>
+        <div class="field span-2">
+          <label for="f05">05 每周反省</label>
+          <textarea id="f05" rows="2" placeholder="本周做得不好的地方与改进点？"></textarea>
+        </div>
+        <div class="field span-2">
+          <label for="f06">06 检视年度计划落地情况</label>
+          <textarea id="f06" rows="2" placeholder="年度计划推进了多少？"></textarea>
+        </div>
+        <div class="field span-2">
+          <label for="f07">07 下周计划</label>
+          <textarea id="f07" rows="2" placeholder="下周准备做什么？"></textarea>
+        </div>
+      </div>
+      <button class="pixel-btn" id="weekSubmit" type="button">保存并生成周复盘（AI）</button>
+      <div id="weekResult" class="result hidden">
+        <div class="result-box">
+          <h3>📋 周复盘文本</h3>
+          <pre id="weekText" class="result-pre"></pre>
+          <button class="pixel-btn small" data-copy="weekText" type="button">复制文本</button>
+        </div>
+        <div class="result-box">
+          <h3>🧭 复盘点评（结合前两周）</h3>
+          <pre id="weekComment" class="result-pre"></pre>
+          <button class="pixel-btn small" data-copy="weekComment" type="button">复制点评</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 下周计划 -->
+    <section class="panel" id="panel-plan">
+      <h2 class="panel-title">🗓 下周任务安排（落实到每天）</h2>
+      <div class="form-grid">
+        <div class="field">
+          <label for="planDate">下周开始日期（任意一天）</label>
+          <input id="planDate" type="date">
+        </div>
+        <div class="field">
+          <label for="planDays">可安排学习天数</label>
+          <select id="planDays">
+            <option value="5">5 天</option>
+            <option value="6" selected>6 天</option>
+            <option value="7">7 天</option>
+            <option value="4">4 天</option>
+            <option value="3">3 天</option>
+            <option value="2">2 天</option>
+            <option value="1">1 天</option>
+          </select>
+        </div>
+        <div class="field span-2">
+          <label for="planGoal">周目标</label>
+          <textarea id="planGoal" rows="3" placeholder="例如：完成《计算机网络》第 3~4 章并做完课后题，英语精读 3 篇……"></textarea>
+        </div>
+        <div class="field">
+          <label for="planMode">课程计量方式</label>
+          <select id="planMode">
+            <option value="count" selected>课程总数（节）</option>
+            <option value="duration">课程总时长（小时）</option>
+          </select>
+        </div>
+        <div class="field" id="planCountBox">
+          <label>课程数量（按小时计）</label>
+          <div class="inline-inputs">
+            <input id="planCount" type="number" min="1" value="10" placeholder="节数">
+            <span class="sep">节 ×</span>
+            <input id="planHoursPerCourse" type="number" min="0.25" step="0.25" value="1.5" placeholder="小时/节">
+            <span class="sep">小时/节</span>
+          </div>
+        </div>
+        <div class="field hidden" id="planDurationBox">
+          <label>课程总时长（小时）</label>
+          <div class="inline-inputs">
+            <input id="planHours" type="number" min="0.5" step="0.5" value="12" placeholder="小时">
+            <span class="sep">小时</span>
+          </div>
+        </div>
+        <div class="field span-2">
+          <label for="planNote">补充信息（AI 会据此调整计划）</label>
+          <input id="planNote" type="text" placeholder="例如：周三下午有课、周末要留出半天休息、周二晚上要开会……">
+        </div>
+      </div>
+      <button class="pixel-btn" id="planSubmit" type="button">生成下周计划（AI）</button>
+      <div id="planResult" class="result hidden">
+        <div class="result-box">
+          <h3>🗓 下周任务安排</h3>
+          <pre id="planText" class="result-pre"></pre>
+          <button class="pixel-btn small" data-copy="planText" type="button">复制计划</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 月复盘 -->
+    <section class="panel" id="panel-month">
+      <h2 class="panel-title">🌙 月复盘（完成 4 周周复盘后生成）</h2>
+      <div class="form-grid">
+        <div class="field">
+          <label for="monthReviewMonth">复盘月份</label>
+          <input id="monthReviewMonth" type="month">
+          <div id="monthReviewHint" class="field-hint"></div>
+        </div>
+      </div>
+
+      <fieldset class="selfeval">
+        <legend>📋 月自评信息</legend>
+        <div class="form-grid">
+          <div class="field">
+            <label for="se_month_progress">本月目标完成度（%）</label>
+            <input id="se_month_progress" type="number" min="0" max="100" placeholder="例如 80">
+          </div>
+          <div class="field">
+            <label for="se_year_progress">年度目标完成度（%）</label>
+            <input id="se_year_progress" type="number" min="0" max="100" placeholder="例如 30">
+          </div>
+          <div class="field">
+            <label for="se_score">本月自评分数（1~10）</label>
+            <input id="se_score" type="number" min="1" max="10" step="0.5" placeholder="例如 7.5">
+          </div>
+          <div class="field span-2">
+            <label for="se_best">做得最好的一件事</label>
+            <textarea id="se_best" rows="2"></textarea>
+          </div>
+          <div class="field span-2">
+            <label for="se_worst">最待改进的一件事</label>
+            <textarea id="se_worst" rows="2"></textarea>
+          </div>
+          <div class="field span-2">
+            <label for="se_habits">各类习惯推进情况</label>
+            <textarea id="se_habits" rows="2" placeholder="早睡、运动、阅读、英语……"></textarea>
+          </div>
+          <div class="field span-2">
+            <label for="se_emotion">情绪状态与内在状态</label>
+            <textarea id="se_emotion" rows="2"></textarea>
+          </div>
+          <div class="field span-2">
+            <label for="se_gain">收获最大的一个点</label>
+            <textarea id="se_gain" rows="2"></textarea>
+          </div>
+          <div class="field span-2">
+            <label for="se_risks">问题与风险</label>
+            <textarea id="se_risks" rows="2"></textarea>
+          </div>
+          <div class="field span-2">
+            <label for="se_next_plan">下个月行动计划重点</label>
+            <textarea id="se_next_plan" rows="2"></textarea>
+          </div>
+        </div>
+      </fieldset>
+
+      <button class="pixel-btn" id="monthReviewSubmit" type="button">保存自评并生成月复盘（AI）</button>
+      <div id="monthReviewResult" class="result hidden">
+        <div class="result-box">
+          <h3>🌙 月复盘总结</h3>
+          <pre id="monthText" class="result-pre"></pre>
+          <button class="pixel-btn small" data-copy="monthText" type="button">复制月复盘</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 档案库 -->
+    <section class="panel" id="panel-archive">
+      <h2 class="panel-title">🗄 年度复盘档案库</h2>
+      <p class="muted archive-tip">按「年 → 月 → 周」归档：月初展示月目标、月末展示月复盘，每周复盘/周计划按周起止日期定位，可回看一年内的全部文档。</p>
+
+      <div class="archive-toolbar">
+        <label for="archiveYear">查看年份</label>
+        <select id="archiveYear"></select>
+        <label for="archiveMonth">月份</label>
+        <select id="archiveMonth"></select>
+        <span id="archiveStats" class="badge"></span>
+      </div>
+
+      <!-- 年目标直接展示在最上方 -->
+      <div id="yearGoalBanner"></div>
+
+      <!-- 年度归档：12 个月份卡片 -->
+      <div id="yearArchive" class="year-archive"></div>
+    </section>
+  </main>
+
+  <div id="progressOverlay" class="progress-overlay hidden">
+    <div class="progress-box">
+      <div class="progress-title" id="progressTitle">AI 生成中…</div>
+      <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
+      <div class="progress-text" id="progressText">0%</div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
